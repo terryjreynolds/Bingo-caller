@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Terry Reynolds: Multiplication Bingo Caller</title>
+
+    <!--
+      Portfolio revised June 2018 using mobile-first and accessibility principles
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome= 1" />
+    <meta
+      name="description"
+      content="Multiplication Bingo Caller built by and for Terry Reynolds"
+    />
+    <meta
+      name="keywords"
+      content="Developer, Bingo, Teacher, Multiplication, Terry Reynolds"
+    />
+    <meta name="author" content="Terry Reynolds" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Oswald"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+      integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+  </head>
+
+  <body>
+    <audio id="bell_sound">
+      <source
+        src="http://www.chersi.it/listing/garamond_podcast06/sound/VIBRABEL.wav"
+        type="audio/WAV"
+      />
+    </audio>
+    <audio id="buzzer_sound">
+      <source
+        src="http://www.threecaster.com/wavy/helmet_b.WAV"
+        type="audio/WAV"
+      />
+    </audio>
+    <nav id="navbar">
+      <button id="callBtn">CALL</button>
+
+      <button id="bingoBtn">BINGO!</button>
+      <button id="resumeBtn">Resume Game</button>
+      <button id="resetBtn">Reset Game</button>
+    </nav>
+    <section id="main-doc">
+      <h1>Multiplication Bingo Caller</h1>
+
+      <div id="relativeKey">
+        <span id="mode"
+          >Choose <button class="modeBtn" id="facts">Facts</button> or
+          <button class="modeBtn" id="numbers">Numbers</button></span
+        >
+      </div>
+      <section id="timerSection">
+        <div id="youMay">You may call again in</div>
+        <span id="timer">0</span> <span id="seconds">seconds</span>
+      </section>
+      <form id="form" autocomplete="off">
+        <input
+          id="num"
+          placeholder="Enter number to check"
+          onclick="emptyCheckmarkOrX()"
+        />
+      </form>
+      <button id="submitBtn">Check Number</button>
+      <div id="yesOrNo" class="checkOrXRed"></div>
+    </section>
+    <script type="text/javascript" src="script.js"></script>
+  </body>
+</html>

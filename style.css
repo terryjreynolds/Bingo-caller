@@ -1,0 +1,158 @@
+body {
+  background: whitesmoke;
+  color: black;
+  font-family: "Oswald", sans-serif;
+  margin-top: 1vw;
+}
+#main-doc {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 79%;
+  height: auto;
+  padding-left: 19%;
+}
+
+h1 {
+  text-align: center;
+  font-size: 4vh;
+  margin-bottom: 1.2vh;
+  margin-top: 2vh;
+}
+#mode {
+  font-size: 4vh;
+}
+.modeBtn {
+  font-size: 4vh;
+}
+#timer {
+  text-align: center;
+  color: rgb(255, 0, 85);
+
+  width: 3vh;
+}
+#timerSection {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 2vh;
+}
+#youMay {
+  text-align: center;
+  width: 20vh;
+  margin-bottom: 4vh;
+}
+#seconds {
+  text-align: center;
+  width: 8vh;
+}
+p {
+  margin-top: 1vh;
+  margin-bottom: 4vh;
+  font-size: 25vh;
+}
+
+#navbar {
+  display: grid;
+  grid-column: repeat(1fr, 1fr, 1fr, 1fr);
+  background: rgb(40, 44, 52);
+  color: #83d0f2;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 18%;
+  height: 100%;
+}
+#relativeKey {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: solid 1vw black;
+  font-size: 16vw;
+  width: 50vw;
+  height: 20vw;
+  padding: 0;
+  margin-top: 0.5vh;
+  margin-bottom: 4vh;
+}
+button {
+  font-size: 2.5vh;
+  border: solid 0.2vh black;
+  color: black;
+  font-weight: normal;
+}
+button:hover {
+  opacity: 0.5;
+}
+
+form {
+  font-size: 3vh;
+}
+#num {
+  width: 26vw;
+  height: 2vw;
+  margin-bottom: 1vh;
+  font-size: 1vw;
+}
+#submitBtn {
+  width: 22vw;
+  height: auto;
+  font-size: 1.5vw;
+  margin-bottom: 0.1vh;
+  text-shadow: grey 0.1vh 0.2vh;
+}
+.checkOrXGreen {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 18vw;
+  font-size: 10vh;
+  font-weight: bold;
+  text-shadow: black 1vh 0.03vh;
+  color: rgb(67, 212, 31);
+}
+.checkOrXRed {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 18vw;
+  font-size: 6vh;
+  color: blue;
+}
+@media (max-width: 730px) {
+  body {
+    margin-top: 40vw;
+  }
+  #navbar {
+    display: grid;
+    grid-column: repeat(1fr, 1fr, 1fr, 1fr);
+    background: rgb(40, 44, 52);
+    color: #83d0f2;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 10%;
+    height: 100%;
+  }
+}
+
+@media (min-width: 800px) {
+  h1 {
+    font-size: 6vh;
+  }
+  #num {
+    width: 14vw;
+    height: 2vw;
+    margin-bottom: 1vh;
+    font-size: 1vw;
+  }
+  #submitBtn {
+    width: 12vw;
+    height: auto;
+    font-size: 1.5vw;
+    margin-bottom: 0.1vh;
+    text-shadow: grey 0.1vh 0.2vh;
+  }
+}
