@@ -126,8 +126,8 @@ numbersButton.addEventListener("click", gameModeNumbers);
 const resetButton = document.getElementById("resetBtn");
 resetButton.addEventListener("click", confirmationWindow);
 
-const submitButton = document.getElementById("submitBtn");
-submitButton.addEventListener("click", checkIfCalled);
+//const submitButton = document.getElementById("submitBtn");
+//submitButton.addEventListener("click", checkIfCalled);
 
 const bingoButton = document.getElementById("bingoBtn");
 bingoButton.addEventListener("click", bingo);
@@ -163,6 +163,13 @@ function gameModeNumbers() {
     .getElementById("num")
     .setAttribute("placeholder", "Enter fact to check (no spaces)");
 }
+
+$(window).keydown(function (event) {
+  if (event.keyCode == 13) {
+   event.preventDefault(); 
+  }
+});
+
 //-----------GAME lOGIC FOR FACTS MODE--------------------------
 
 function randomizer(obj) {

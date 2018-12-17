@@ -29,6 +29,7 @@
       crossorigin="anonymous"
     />
     <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="jquery-3.3.1.min.js"></script>
   </head>
 
   <body>
@@ -64,14 +65,20 @@
         <div id="youMay">You may call again in</div>
         <span id="timer">0</span> <span id="seconds">seconds</span>
       </section>
-      <form id="form" autocomplete="off">
+      <form
+        action="#"
+        id="form"
+        autocomplete="off"
+        onsubmit="checkifCalled();return false"
+      >
         <input
           id="num"
           placeholder="Enter number to check"
           onclick="emptyCheckmarkOrX()"
         />
+        <input id="submitBtn" type="submit" value="Check Number" />
       </form>
-      <button id="submitBtn">Check Number</button>
+
       <div id="yesOrNo" class="checkOrXRed"></div>
     </section>
     <script type="text/javascript" src="script.js"></script>
