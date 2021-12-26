@@ -380,6 +380,11 @@ function randomizerNumbers(obj) {
     let keys = Object.keys(bingoFacts);
     allInstances.map((c) => randomFacts.push(keys[c]));
     console.log("randomFacts", randomFacts);
+    //store the randomFacts in local storage to retrieve with the show all button
+    let randomFactsNoWhitespace = randomFacts.map((c) => c.replace(/\s/g, ""));
+    window.localStorage.setItem("gameValues", JSON.stringify(randomFactsNoWhitespace));
+    let values = window.localStorage.getItem("gameValues");
+    valueDisplay.innerHTML = values;
     document.getElementById("relativeKey").innerHTML = objectValueY;
     const colorCode2 = /^2/g;
     const colorCode3 = /^3/g;
