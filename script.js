@@ -1,5 +1,31 @@
 //object containing key-value pairs for multiplication tables from 2 to 9
-let bingoFacts = {
+
+const bingoFacts = {
+  "0 x 0": 0,
+  "0 x 1": 0,
+  "0 x 3": 0,
+  "0 x 4": 0,
+  "0 x 5": 0,
+  "0 x 6": 0,
+  "0 x 7": 0,
+  "0 x 8": 0,
+  "0 x 9": 0,
+  "0 x 10": 0,
+  "0 x 11": 0,
+  "0 x 12": 0,
+  "1 x 0": 0,
+  "1 x 1": 1,
+  "1 x 2": 2,
+  "1 x 3": 3,
+  "1 x 4": 4,
+  "1 x 5": 5,
+  "1 x 6": 6,
+  "1 x 7": 7,
+  "1 x 8": 8,
+  "1 x 9": 9,
+  "1 x 10": 10,
+  "1 x 11": 11,
+  "1 x 12": 12,
   "2 x 0": 0,
   "2 x 1": 2,
   "2 x 2": 4,
@@ -103,13 +129,29 @@ let bingoFacts = {
   "9 x 9": 81,
   "9 x 10": 90,
   "9 x 11": 99,
-  "9 x 12": 108
+  "9 x 12": 108,
 };
 
-//----------------Event Listeners-------------------
+/*set up local store at outset of game to store array of selected game values*/
 
-const question = document.getElementById("callBtn");
-question.addEventListener("click", function() {
+//check for the array in local storage, then set it up if it doesn't exist
+
+function createLocalStorage() {
+  const emptyArray = [];
+  console.log("in createLocalStorage");
+  let gameValues = window.localStorage.getItem("gameValues");
+  if (!gameValues) {
+    console.log("creating local storage variable");
+    window.localStorage.setItem("gameValues", JSON.stringify(emptyArray));
+  }
+}
+
+createLocalStorage();
+
+/*----------------Event Listeners-------------------*/
+
+let question = document.getElementById("callBtn");
+question.addEventListener("click", function () {
   if (gameMode) {
     randomizer(bingoFacts);
   } else {
@@ -126,8 +168,8 @@ numbersButton.addEventListener("click", gameModeNumbers);
 const resetButton = document.getElementById("resetBtn");
 resetButton.addEventListener("click", confirmationWindow);
 
-//const submitButton = document.getElementById("submitBtn");
-//submitButton.addEventListener("click", checkIfCalled);
+/*const submitButton = document.getElementById("submitBtn");
+submitButton.addEventListener("click", checkIfCalled);*/
 
 const bingoButton = document.getElementById("bingoBtn");
 bingoButton.addEventListener("click", bingo);
@@ -137,43 +179,68 @@ resumeButton.addEventListener("click", Resume);
 
 let timer = document.getElementById("timer");
 
+const showAllNumbersButton = document.getElementById("showAllNumbers");
+const valueDisplay = document.getElementById("valueDisplay");
+function toggleValueDisplay() {
+  if (valueDisplay.style.display === "none") {
+    valueDisplay.style.display = "block";
+  } else {
+    valueDisplay.style.display = "none";
+  }
+}
 //-----------GLOBAL VARIABLES--------------------
-let randomUniqueKeys = [];
+let currentLocalStorageValues = window.localStorage.getItem("gameValues");
+let currentValues = JSON.parse(currentLocalStorageValues);
+
+console.log("currenetLocalStorageValues", currentLocalStorageValues);
+let randomUniqueKeys = currentValues;
 let randomFacts = [];
 let timerReadOut = 20;
 let bingoTime = false;
 resumeButton.disabled = true;
-let gameMode = true;
-
+let gameMode;
+const synth = window.speechSynthesis;
+const voices = synth.getVoices();
 //----------Functions to choose game mode displaying facts or numbers----------
 function gameModeFacts() {
   console.log("game is facts");
   gameMode = true;
   document.getElementById("mode").style.display = "none";
   question.innerText = "CALL FACT";
+  enableButtons();
 }
 
 function gameModeNumbers() {
   console.log("game is numbers");
+
   gameMode = false;
   document.getElementById("mode").style.display = "none";
-  submitButton.innerText = "Check Fact";
+  document.querySelector("#submitBtn").setAttribute("value", "Check Fact");
   question.innerText = "CALL NUMBER";
   document
     .getElementById("num")
     .setAttribute("placeholder", "Enter fact to check (no spaces)");
+  enableButtons();
 }
 
-$(window).keydown(function (event) {
-  if (event.keyCode == 13) {
-   event.preventDefault(); 
+function enableButtons() {
+  document.getElementById("callBtn").disabled = false;
+  document.getElementById("bingoBtn").disabled = false;
+  document.getElementById("resumeBtn").disabled = false;
+}
+
+window.addEventListener("keydown", (event) => {
+  if (event.keyCode === 13) {
+    console.log("oh no its the enter key");
+    event.preventDefault();
   }
+  // do something
 });
-
 //-----------GAME lOGIC FOR FACTS MODE--------------------------
-
+//Gets called after click of the callBtn
 function randomizer(obj) {
   console.log(randomUniqueKeys);
+  //returns a random question answer
   let y = callQuestion(obj);
   let objectValue = Object.values(y);
   let keyValue = Object.keys(y);
@@ -190,6 +257,10 @@ function randomizer(obj) {
   } else {
     console.log("im in");
     randomUniqueKeys.push(objectValueY);
+    window.localStorage.setItem("gameValues", JSON.stringify(randomUniqueKeys));
+    let values = window.localStorage.getItem("gameValues");
+    valueDisplay.innerHTML = values;
+
     document.getElementById("relativeKey").innerHTML = keyValue;
     const colorCode2 = /^2/g;
     const colorCode3 = /^3/g;
@@ -218,41 +289,50 @@ function randomizer(obj) {
       y.setAttribute("style", "color: brown;");
     }
     question.disabled = true;
-    setTimeout(function() {
+    setTimeout(function () {
       question.disabled = false;
     }, 20000);
 
     myTimer(timerReadOut, timer);
-    let factSpokenWithoutX = y.innerText.replace(/x/g, "groups of");
+    let factSpokenWithoutX = y.innerText.replace(
+      /x/g,
+      y.innerText.startsWith("1") ? "group of" : "groups of"
+    );
+
+    console.log("facts", factSpokenWithoutX);
     soundBell();
-    setTimeout(function() {
+    setTimeout(function () {
       textToSpeech(factSpokenWithoutX);
     }, 1200);
     console.log(randomUniqueKeys);
   }
 }
-//----------AUDIO MODULE------------------
+/*----------AUDIO MODULE------------------*/
 
 function textToSpeech(msg) {
+  const synth = window.speechSynthesis;
+  const voices = synth.getVoices();
+  console.log("voices", voices);
   let message = new SpeechSynthesisUtterance(msg);
-  window.speechSynthesis.speak(message);
+  message.voice = voices[1];
+  synth.speak(message);
 }
 
 function soundBell() {
   bell_sound.load();
-  setTimeout(function() {
+  setTimeout(function () {
     bell_sound.play();
   }, 300);
 }
 
 function soundBuzzer() {
   buzzer_sound.load();
-  setTimeout(function() {
+  setTimeout(function () {
     buzzer_sound.play();
   }, 300);
 }
 
-//-------------GAME LOGIC FOR NUMBERS MODE----------------------
+/*-------------GAME LOGIC FOR NUMBERS MODE----------------------*/
 
 function randomizerNumbers(obj) {
   console.log("im in randomizerNumbers");
@@ -298,7 +378,7 @@ function randomizerNumbers(obj) {
     console.log("allInstances", allInstances);
     //convert the returned indexes to facts and push to array
     let keys = Object.keys(bingoFacts);
-    allInstances.map(c => randomFacts.push(keys[c]));
+    allInstances.map((c) => randomFacts.push(keys[c]));
     console.log("randomFacts", randomFacts);
     document.getElementById("relativeKey").innerHTML = objectValueY;
     const colorCode2 = /^2/g;
@@ -328,14 +408,14 @@ function randomizerNumbers(obj) {
       y.setAttribute("style", "color: brown;");
     }
     question.disabled = true;
-    setTimeout(function() {
+    setTimeout(function () {
       question.disabled = false;
     }, 20000);
 
     myTimer(timerReadOut, timer);
     soundBell();
     let speech = document.getElementById("relativeKey").innerText;
-    setTimeout(function() {
+    setTimeout(function () {
       textToSpeech(speech);
     }, 1200);
     console.log(randomUniqueKeys);
@@ -364,7 +444,7 @@ function myTimer(num, timer) {
   num = num - 1;
   if (!bingoTime) {
     if (num >= 0) {
-      setTimeout(function() {
+      setTimeout(function () {
         myTimer(num, timer);
       }, 1000);
     } else {
@@ -381,21 +461,28 @@ function emptyCheckmarkOrX() {
   document.getElementById("yesOrNo").innerHTML = "";
 }
 function callQuestion(obj) {
+  console.log("im in callQuestion");
   let questionAnswer = {};
+  //returns an array of keys from obj.
   let keys = Object.keys(obj);
+  console.log("bingoFacts keys", keys);
+  //takes the length of the number of keys in bingoFacts and picks a random number
   let relativeKey = (keys.length * Math.random()) << 0;
-
+  console.log("random number to choose from bingoFacts keys", relativeKey);
+  //sets random to the fact found in bingoFacts at array element 'relativeKey' e.g. 21 would return 1x10
   let random = obj[keys[relativeKey]];
+  console.log("random", random);
   console.log("relativeKey", keys[relativeKey]);
   let anotherKey = keys[relativeKey];
+  console.log("anotherKey", anotherKey);
   questionAnswer = {
-    [anotherKey]: random
+    [anotherKey]: random,
   };
   console.log("questionAnswer", questionAnswer);
   return questionAnswer;
 }
 
-//-----------SAFETY FEATURE------------------
+/*-----------SAFETY FEATURE------------------*/
 function confirmationWindow() {
   const confirmation = confirm(
     "Press OK to reset the game or cancel to resume"
@@ -406,24 +493,28 @@ function confirmationWindow() {
 }
 
 function reset() {
+  window.localStorage.clear();
   location.reload();
 }
 
 function bingo() {
   const speechTags = [
-    "Don't forget to buy a Nevada ticket",
-    "Winner, winner, chicken dinner",
-    "Now you can by me a hot dog and french fries, buddy",
-    "Somebody has a horseshoe in their pocket. Ha ha ha!",
-    "Let's go to Las Vegas!",
-    "Are you for real?",
-    "Farmer Brown he had a dog and...well, you know the rest"
+    "Bingo, Bingo, the dog...ruff ruff",
+    "Bingo. Bingo. Bingo.",
+    "There was a farmer had a dog.",
+    "Bingo time!",
+    "Bingo, party time!",
+    "Bingo. Winner, winner, chicken dinner",
+    "Bingo, you are amazing",
+    "Bingo, I once saw a unicorn",
+    "Bingo, where is Jeff?",
+    "Jeff got a bingo.",
   ];
   //pick a random speech tag to accompany the bingo
   let randomPhrase = speechTags[Math.floor(Math.random() * 7 + 0)];
   textToSpeech("Bingo!" + randomPhrase);
   resumeButton.disabled = false;
-  question.disabled = true;
+  document.getElementById("callBtn").disabled = true;
   bingoTime = true;
   console.log("im in bingo");
   bingoButton.setAttribute(
@@ -445,46 +536,95 @@ function Resume() {
     "opacity: none; color: black; font-size: 2.5vh;"
   );
   resumeButton.disabled = true;
+  bingoButton.disabled = false;
+  callBtn.disabled = false;
 }
-//---------------Function to decide if answer was called--------------------
+/*---------------Function to decide if answer was called--------------------*/
 
 function checkIfCalled() {
+  event.preventDefault();
+  console.log("gamemode", gameMode);
   if (gameMode) {
     console.log("im in checkIfCalled");
+    //grabs the number the user keys in
     const numberInput = document.getElementById("num");
+    //parse the keyed in number as an integer
     let numberToCheck = parseInt(document.getElementById("num").value);
+    //checks to see if the keyed number is in the array of numbers called in the game
     if (randomUniqueKeys.includes(numberToCheck)) {
       console.log("yes", numberToCheck);
+      //adjusts the styling of the div to green and with a checkmark
       document.getElementById("yesOrNo").className = "checkOrXGreen";
       document.getElementById("yesOrNo").innerHTML = "&#10003";
       const speechTags = [
-        "Correctamundo",
-        "Yeet Yeet!",
-        "Level four buddy!",
-        "Now you're cookin with gas!",
-        "Affirmative",
-        "Wowza! That's absolutely right!",
-        "Oh Yeah! That's totally right!"
+        "Mr. Reynolds is the scrooge.",
+        "That's right",
+        "Santa has left the building",
+        "I like Christmas",
+        "Are you on Santa's naughty list?",
+        "This is outrageous",
+        "I once tried to ride an reindeer",
+        "It was supposed to snow wasn't it?",
+        "I have a growth mindset",
+        "Is Jeff an elf?",
+        "It's almost Christmas!!!",
+        "I'm telling Santa!",
+        "You know dasher and dancer and wayne and dave",
+        "Great work.",
+        "Ms. Lyons is staring at me",
+        "Ms. Lyons is STILL staring at me",
+        "Santa is a millionaire",
+        "Christmas is coming up",
+        "Where's the tylenol?",
+        "Jim Dandy!",
+        "Joy to the World",
+        "Fa la la la la",
+        "I have a boo boo",
+        "That's it! No more Christmas for you",
+        "YES!",
+        "Is it 2:40 yet?",
+        "I knew it!",
+        "Grandma got run over by a reindeer",
+        "When's the Christmas party?",
+        "I'm telling Santa's mom",
+        "Mommy",
+        "You'll find coal in your stocking",
+        "Are you standing under the mistletoe?",
+        "Who put the shang in the shang a lang a lang?",
+        "Now, where did I put my sleigh?",
+        "You better not pout, you better not cry",
+        "I love chocolate",
+        "I'm lonely!",
+        "Tim Beebs, tim beebs",
+        "I vote Justin Beeber for Prime Minister",
+        "Candy canes on tuna",
       ];
       //pick a random speech tag to accompany the bingo
-      let randomPhrase = speechTags[Math.floor(Math.random() * 7 + 0)];
+      let randomPhrase = speechTags[Math.floor(Math.random() * 40 + 0)];
       textToSpeech(randomPhrase);
+      //resets the input window to an empty string
       numberInput.value = "";
+      //inserts a placeholder value string
       numberInput.placeholder = "Enter a number to check";
+      //ensures that no new numbers can be called until the game is resumed
+      document.getElementById("callBtn").disabled = true;
     } else {
+      //if the user keyed number is not in the array, do this
       console.log("no", numberToCheck);
       document.getElementById("yesOrNo").className = "checkOrXRed";
       document.getElementById("yesOrNo").innerHTML = "&#x274C";
       soundBuzzer();
-      setTimeout(function() {
+      setTimeout(function () {
         textToSpeech("Sorry. That number was not called.");
       }, 1400);
       numberInput.value = "";
       numberInput.placeholder = "Enter a number to check";
+      document.getElementById("callBtn").disabled = true;
     }
-  } else {
+  } else if (gameMode == false) {
+    console.log("decided the gameMode was false");
     //remove the spaces from the randomFacts array to facilitate the matching of user input
-    let noSpacesRandomFacts = randomFacts.map(c => c.replace(/\s/g, ""));
+    let noSpacesRandomFacts = randomFacts.map((c) => c.replace(/\s/g, ""));
     console.log("noSpaces", noSpacesRandomFacts);
     const numberInput = document.getElementById("num");
     let factToCheck = numberInput.value;
@@ -494,29 +634,31 @@ function checkIfCalled() {
       document.getElementById("yesOrNo").className = "checkOrXGreen";
       document.getElementById("yesOrNo").innerHTML = "&#10003";
       const speechTags = [
-        "Correctamundo",
-        "Yeet Yeet!",
-        "Level four buddy!",
-        "Now you're cookin with gas!",
-        "Affirmative",
-        "Wowza! That's absolutely right!",
-        "Oh Yeah! That's totally right!"
+        "You are right as rain!",
+        "Unbelievable",
+        "Celebrate good times!",
+        "You should buy a lottery ticket!",
+        "Incorrect! Just kidding, it's right!",
+        "Yahoo!",
+        "Ding Dang Doo!",
       ];
       //pick a random speech tag to accompany the bingo
       let randomPhrase = speechTags[Math.floor(Math.random() * 7 + 0)];
       textToSpeech(randomPhrase);
       numberInput.value = "";
       numberInput.placeholder = "Enter fact to check (no spaces)";
+      document.getElementById("callBtn").disabled = true;
     } else {
       console.log("no", factToCheck);
       document.getElementById("yesOrNo").className = "checkOrXRed";
       document.getElementById("yesOrNo").innerHTML = "&#x274C";
       soundBuzzer();
-      setTimeout(function() {
+      setTimeout(function () {
         textToSpeech("Sorry. That fact was not called.");
       }, 1200);
       numberInput.value = "";
       numberInput.placeholder = "Enter fact to check (no spaces)";
+      document.getElementById("callBtn").disabled = true;
     }
   }
 }

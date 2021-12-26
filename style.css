@@ -155,4 +155,7 @@ form {
     margin-bottom: 0.1vh;
     text-shadow: grey 0.1vh 0.2vh;
   }
+  #valueDisplay {
+    display: none;
+  }
 }

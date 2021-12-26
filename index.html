@@ -4,7 +4,7 @@
     <title>Terry Reynolds: Multiplication Bingo Caller</title>
 
     <!--
-      Portfolio revised June 2018 using mobile-first and accessibility principles
+      Bingo-calling app designed for a third grade classroom
     -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta charset="utf-8" />
@@ -28,8 +28,8 @@
       integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
       crossorigin="anonymous"
     />
+
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <script src="jquery-3.3.1.min.js"></script>
   </head>
 
   <body>
@@ -46,10 +46,10 @@
       />
     </audio>
     <nav id="navbar">
-      <button id="callBtn">CALL</button>
+      <button id="callBtn" disabled="true">CALL</button>
 
-      <button id="bingoBtn">BINGO!</button>
-      <button id="resumeBtn">Resume Game</button>
+      <button id="bingoBtn" disabled="true">BINGO!</button>
+      <button id="resumeBtn" disabled="true">Resume Game</button>
       <button id="resetBtn">Reset Game</button>
     </nav>
     <section id="main-doc">
@@ -65,12 +65,7 @@
         <div id="youMay">You may call again in</div>
         <span id="timer">0</span> <span id="seconds">seconds</span>
       </section>
-      <form
-        action="#"
-        id="form"
-        autocomplete="off"
-        onsubmit="checkifCalled();return false"
-      >
+      <form action="#" id="form" autocomplete="off" onsubmit="checkIfCalled()">
         <input
           id="num"
           placeholder="Enter number to check"
@@ -80,6 +75,10 @@
       </form>
 
       <div id="yesOrNo" class="checkOrXRed"></div>
+      <button id="showAllNumbers" onclick="toggleValueDisplay()">
+        Show All Numbers Called
+      </button>
+      <div id="valueDisplay">Nothing has been called yet</div>
     </section>
     <script type="text/javascript" src="script.js"></script>
   </body>
