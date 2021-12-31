@@ -132,21 +132,23 @@ const bingoFacts = {
   "9 x 12": 108,
 };
 
-/*set up local store at outset of game to store array of selected game values*/
+//-----------GLOBAL VARIABLES--------------------
+//Variable to toggle between game modes
+let gameMode;
+//Variable for creating local storage with function manageLocalStore
+ let factValues;
+ let numValues;
+let numFacts;
 
-//check for the array in local storage, then set it up if it doesn't exist
+let timerReadOut = 15;
+let bingoTime = false;
 
-function createLocalStorage() {
-  const emptyArray = [];
-  console.log("in createLocalStorage");
-  let gameValues = window.localStorage.getItem("gameValues");
-  if (!gameValues) {
-    console.log("creating local storage variable");
-    window.localStorage.setItem("gameValues", JSON.stringify(emptyArray));
-  }
-}
+let numbersAlreadyCalled = [];
 
-createLocalStorage();
+//Voice module global variables
+const synth = window.speechSynthesis;
+const voices = synth.getVoices();
+
 
 /*----------------Event Listeners-------------------*/
 
@@ -188,26 +190,77 @@ function toggleValueDisplay() {
     valueDisplay.style.display = "none";
   }
 }
-//-----------GLOBAL VARIABLES--------------------
-let currentLocalStorageValues = window.localStorage.getItem("gameValues");
-let currentValues = JSON.parse(currentLocalStorageValues);
 
-console.log("currenetLocalStorageValues", currentLocalStorageValues);
-let randomUniqueKeys = currentValues;
-let randomFacts = [];
-let timerReadOut = 20;
-let bingoTime = false;
 resumeButton.disabled = true;
-let gameMode;
-const synth = window.speechSynthesis;
-const voices = synth.getVoices();
+
+
+/*set up local store at outset of game to store array of selected game values*/
+
+//check for the array in local storage, then set it up if it doesn't exist
+
+function manageLocalStore() {
+  console.log("in manageLocalStore");
+  //CASE: GAME IS FACTS
+  if (gameMode) {
+    let emptyArray = [];
+    
+    factValues = JSON.parse(window.localStorage.getItem("factValues"));
+    console.log("factValues", factValues);
+    if (!factValues) {
+      console.log("creating local storage for facts game");
+      window.localStorage.setItem("factValues", JSON.stringify(emptyArray));
+      console.log('created', window.localStorage.getItem("factValues"));
+    }
+  factValues = JSON.parse(window.localStorage.getItem("factValues"));
+  console.log('parsed factValues', factValues, typeof(factValues));
+
+  //CASE: GAME IS NUMBERS
+  }else {
+
+    //MANAGE LS OF numValues (ie: values already called)
+console.log('in manageLocalStore for numbers game');
+
+    let emptyArr = [];
+    //look for local storage of an array of numValues
+  numValues = JSON.parse(window.localStorage.getItem("numValues"));
+  console.log("numValues", numValues);
+  //if no local storage of numValues exists, create it
+  if (!numValues) {
+    console.log('creating local storage for numValues');
+    window.localStorage.setItem("numValues", JSON.stringify(emptyArr));
+    //set the global variable numValues to the value retrieved from local storage (empty)
+  }
+
+  numValues = JSON.parse(window.localStorage.getItem("numValues"));
+  console.log('parsed numValues', numValues, typeof(numValues));
+
+  //MAANGE THE LS OF THE FACTS CALLED DURING NUMBERS GAME-- numFacts global variable (e.g. "1x2")
+  
+    //look for and retrieve the numFacts array
+    numFacts = JSON.parse(window.localStorage.getItem("numFacts"));
+    console.log("numFacts", numFacts);
+
+    //if the numFacts array does not exist in local storage, then create it as an empty array
+      if (!numFacts) {
+        console.log('creating local storage of facts for numbers game');
+        let emptyArr2 = [];
+        window.localStorage.setItem("numFacts", JSON.stringify(emptyArr2));
+      }
+      //set the global variable currentNumbers to the value retrieved from local storage (empty)
+      numFacts = JSON.parse( window.localStorage.getItem("numFacts"));
+      console.log('parsed numFacts', numFacts, typeof(numFacts));
+  }  
+  }
+  
 //----------Functions to choose game mode displaying facts or numbers----------
 function gameModeFacts() {
   console.log("game is facts");
   gameMode = true;
   document.getElementById("mode").style.display = "none";
+  document.getElementById("showAllNumbers").innerHTML = "Show All Numbers Called";
   question.innerText = "CALL FACT";
   enableButtons();
+  manageLocalStore();
 }
 
 function gameModeNumbers() {
@@ -215,12 +268,14 @@ function gameModeNumbers() {
 
   gameMode = false;
   document.getElementById("mode").style.display = "none";
+  document.getElementById("showAllNumbers").innerHTML = "Show All Facts Called";
   document.querySelector("#submitBtn").setAttribute("value", "Check Fact");
   question.innerText = "CALL NUMBER";
   document
     .getElementById("num")
     .setAttribute("placeholder", "Enter fact to check (no spaces)");
   enableButtons();
+  manageLocalStore();
 }
 
 function enableButtons() {
@@ -239,27 +294,39 @@ window.addEventListener("keydown", (event) => {
 //-----------GAME lOGIC FOR FACTS MODE--------------------------
 //Gets called after click of the callBtn
 function randomizer(obj) {
-  console.log(randomUniqueKeys);
+  let randomValues = JSON.parse(window.localStorage.getItem('factValues'));
+
+  console.log('randomValues', randomValues);
+  console.log('what is randomValues', typeof(randomValues));
+
   //returns a random question answer
   let y = callQuestion(obj);
-  let objectValue = Object.values(y);
-  let keyValue = Object.keys(y);
-  let objectValueY = objectValue[0];
-  console.log(objectValueY);
 
-  if (randomUniqueKeys.includes(objectValueY)) {
-    console.log(randomUniqueKeys.includes(objectValueY));
-    console.log(randomUniqueKeys.length);
-    console.log(bingoFacts);
-    if (randomUniqueKeys.length < Object.keys(bingoFacts).length) {
+  //these variables contain the fact and answer chosen
+  let keyValue = Object.keys(y);
+  let objectValue = Object.values(y);
+  
+  let objectValueY = objectValue[0];
+  console.log("objectValueY", objectValueY);
+  console.log('type', typeof(objectValueY));
+
+  if (randomValues.includes(objectValueY)) {
+    console.log(randomValues.includes(objectValueY), objectValueY, "was already chosen");
+  
+    if (randomValues.length < Object.keys(bingoFacts).length) {
       randomizer(bingoFacts);
+      console.log('recursive call to randomizer');
     }
+
+    //if the chosen answer hasn't already been called
   } else {
-    console.log("im in");
-    randomUniqueKeys.push(objectValueY);
-    window.localStorage.setItem("gameValues", JSON.stringify(randomUniqueKeys));
-    let values = window.localStorage.getItem("gameValues");
+    console.log("answer not previously chosen; proceed with game");
+    randomValues.push(objectValueY);
+    window.localStorage.setItem("factValues", JSON.stringify(randomValues));
+    let values = window.localStorage.getItem("factValues");
     valueDisplay.innerHTML = values;
+    factValues = JSON.parse(window.localStorage.getItem('factValues'));
+    console.log('factValues', factValues);
 
     document.getElementById("relativeKey").innerHTML = keyValue;
     const colorCode2 = /^2/g;
@@ -291,7 +358,7 @@ function randomizer(obj) {
     question.disabled = true;
     setTimeout(function () {
       question.disabled = false;
-    }, 20000);
+    }, 15000);
 
     myTimer(timerReadOut, timer);
     let factSpokenWithoutX = y.innerText.replace(
@@ -304,7 +371,6 @@ function randomizer(obj) {
     setTimeout(function () {
       textToSpeech(factSpokenWithoutX);
     }, 1200);
-    console.log(randomUniqueKeys);
   }
 }
 /*----------AUDIO MODULE------------------*/
@@ -312,7 +378,6 @@ function randomizer(obj) {
 function textToSpeech(msg) {
   const synth = window.speechSynthesis;
   const voices = synth.getVoices();
-  console.log("voices", voices);
   let message = new SpeechSynthesisUtterance(msg);
   message.voice = voices[1];
   synth.speak(message);
@@ -333,58 +398,79 @@ function soundBuzzer() {
 }
 
 /*-------------GAME LOGIC FOR NUMBERS MODE----------------------*/
-
 function randomizerNumbers(obj) {
   console.log("im in randomizerNumbers");
-  console.log(randomUniqueKeys);
+ 
+  let randomNumValues = JSON.parse(window.localStorage.getItem('numValues'));
+
+  console.log('randomNumValues', randomNumValues);
+  console.log('what is randomNumValues', typeof(randomNumValues));
+
   //call question returns a random object with a single key-value pair
   let y = callQuestion(obj);
-  //an array of all the values found in array y --so, only 1 number
+  
+   //these variables contain the fact and answer chosen
+  let keyValue = Object.keys(y);
   let objectValue = Object.values(y);
 
   console.log("objectValue", objectValue);
-  let keyValue = Object.keys(y);
   console.log("keyValue", keyValue);
+
   //the single VALUE from the object stored in a variable
   let objectValueY = objectValue[0];
 
   //the single KEY from the object, stored in a variable
   let keyValueY = keyValue[0];
-  console.log("randomUnique Keys", randomUniqueKeys);
-  console.log("objectValueY", objectValueY);
-  console.log(objectValueY);
+ 
   //if the value has already been selected and pushed to the array, recursively call
   //randomizer again to choose hopefully a different one.
-  if (randomUniqueKeys.includes(objectValueY)) {
-    console.log(
-      "randomUniqueKeys includes objectValueY",
-      randomUniqueKeys.includes(objectValueY)
-    );
-    console.log("randomUniqueKeys length", randomUniqueKeys.length);
-    console.log("randomUniqueKeys", randomUniqueKeys);
-    console.log(bingoFacts);
-    //check to ensure that the length of the array is less than
-    //the length of the original bingoFacts object
-    //if it is, call the randomizerNumbers function again to select a new number
-    if (randomUniqueKeys.length < 104) {
-      randomizerNumbers(bingoFacts);
-    }
+
+    if (randomNumValues.length > 0 && randomNumValues.includes(objectValueY)) {
+      console.log(
+        "randomNumValues includes objectValueY",
+        randomNumValues.includes(objectValueY)
+      );
+      console.log("randomNumValues", randomNumValues);
+      
+      //check to ensure that the length of the array is less than
+      //the length of the original bingoFacts object
+      //if it is, call the randomizerNumbers function again to select a new number
+      if (randomNumValues.length < 104) {
+        randomizerNumbers(bingoFacts);
+      }
+  
+ 
   } else {
-    console.log("im in");
-    //since the random number is not in randomUniqueKeys, push it to it
-    randomUniqueKeys.push(objectValueY);
-    //this variable contains indexes of all occurrances of objectValueY
+    console.log("number has not been called. Proceeding with question");
+
+    let randomNumbers = JSON.parse(window.localStorage.getItem('numFacts'));
+    //push objectValueY to the array randomNumValues
+    randomNumValues.push(objectValueY);
+    window.localStorage.setItem("numValues", JSON.stringify(randomNumValues));
+    console.log('randomNumValues', randomNumValues);
+
+    //find all indexes of questions that have the same answer stored in objectValueY
     const allInstances = findAllInstancesOfObjectValueY(objectValueY);
     console.log("allInstances", allInstances);
+
     //convert the returned indexes to facts and push to array
     let keys = Object.keys(bingoFacts);
-    allInstances.map((c) => randomFacts.push(keys[c]));
-    console.log("randomFacts", randomFacts);
+    allInstances.map((c) => randomNumbers.push(keys[c]));
+    console.log("randomNumbers", randomNumbers);
+    console.log('randomNumbers after new ones pushed', randomNumbers);
+
+//At this point randomNumbers array contains the collected numFacts
+
     //store the randomFacts in local storage to retrieve with the show all button
-    let randomFactsNoWhitespace = randomFacts.map((c) => c.replace(/\s/g, ""));
-    window.localStorage.setItem("gameValues", JSON.stringify(randomFactsNoWhitespace));
-    let values = window.localStorage.getItem("gameValues");
+    // let randomFactsNoWhitespace = randomFacts.map((c) => c.replace(/\s/g, ""));
+    window.localStorage.setItem("numFacts", JSON.stringify(randomNumbers));
+    let values = window.localStorage.getItem("numFacts");
     valueDisplay.innerHTML = values;
+
+    numFacts = JSON.parse(window.localStorage.getItem('numFacts'));
+    console.log('numFacts', numFacts);
+
+
     document.getElementById("relativeKey").innerHTML = objectValueY;
     const colorCode2 = /^2/g;
     const colorCode3 = /^3/g;
@@ -415,7 +501,7 @@ function randomizerNumbers(obj) {
     question.disabled = true;
     setTimeout(function () {
       question.disabled = false;
-    }, 20000);
+    }, 15000);
 
     myTimer(timerReadOut, timer);
     soundBell();
@@ -423,7 +509,7 @@ function randomizerNumbers(obj) {
     setTimeout(function () {
       textToSpeech(speech);
     }, 1200);
-    console.log(randomUniqueKeys);
+    
   }
 }
 
@@ -454,11 +540,11 @@ function myTimer(num, timer) {
       }, 1000);
     } else {
       timer.innerHTML = "0";
-      timerReadOut = 20;
+      timerReadOut = 15;
     }
   } else {
     timer.innerHTML = "0";
-    timerReadOut = 20;
+    timerReadOut = 15;
     return;
   }
 }
@@ -470,13 +556,13 @@ function callQuestion(obj) {
   let questionAnswer = {};
   //returns an array of keys from obj.
   let keys = Object.keys(obj);
-  console.log("bingoFacts keys", keys);
+  
   //takes the length of the number of keys in bingoFacts and picks a random number
   let relativeKey = (keys.length * Math.random()) << 0;
-  console.log("random number to choose from bingoFacts keys", relativeKey);
+  console.log("random key chosen", relativeKey);
   //sets random to the fact found in bingoFacts at array element 'relativeKey' e.g. 21 would return 1x10
   let random = obj[keys[relativeKey]];
-  console.log("random", random);
+  console.log("answer belonging to the key", random);
   console.log("relativeKey", keys[relativeKey]);
   let anotherKey = keys[relativeKey];
   console.log("anotherKey", anotherKey);
@@ -504,16 +590,16 @@ function reset() {
 
 function bingo() {
   const speechTags = [
-    "Bingo, Bingo, the dog...ruff ruff",
-    "Bingo. Bingo. Bingo.",
+    "Bingo the dog",
+    "Bingo",
     "There was a farmer had a dog.",
     "Bingo time!",
     "Bingo, party time!",
     "Bingo. Winner, winner, chicken dinner",
     "Bingo, you are amazing",
     "Bingo, I once saw a unicorn",
-    "Bingo, where is Jeff?",
-    "Jeff got a bingo.",
+    "Jeff has a bingo!",
+    "Bingo, bango, boingo",
   ];
   //pick a random speech tag to accompany the bingo
   let randomPhrase = speechTags[Math.floor(Math.random() * 7 + 0)];
@@ -556,56 +642,40 @@ function checkIfCalled() {
     //parse the keyed in number as an integer
     let numberToCheck = parseInt(document.getElementById("num").value);
     //checks to see if the keyed number is in the array of numbers called in the game
-    if (randomUniqueKeys.includes(numberToCheck)) {
+    if (factValues.includes(numberToCheck)) {
       console.log("yes", numberToCheck);
       //adjusts the styling of the div to green and with a checkmark
       document.getElementById("yesOrNo").className = "checkOrXGreen";
       document.getElementById("yesOrNo").innerHTML = "&#10003";
       const speechTags = [
-        "Mr. Reynolds is the scrooge.",
+        "Mr. Reynolds is very shy",
         "That's right",
-        "Santa has left the building",
-        "I like Christmas",
-        "Are you on Santa's naughty list?",
+        "Is it Valentine's Day yet?",
+        "Welcome to the year twenty twenty two",
+        "Will you be my Valentine?",
         "This is outrageous",
-        "I once tried to ride an reindeer",
-        "It was supposed to snow wasn't it?",
+        "Who is cupid anyway?",
+        "January is long",
         "I have a growth mindset",
-        "Is Jeff an elf?",
-        "It's almost Christmas!!!",
-        "I'm telling Santa!",
-        "You know dasher and dancer and wayne and dave",
+        "Is Jeff in love?",
         "Great work.",
-        "Ms. Lyons is staring at me",
-        "Ms. Lyons is STILL staring at me",
-        "Santa is a millionaire",
-        "Christmas is coming up",
-        "Where's the tylenol?",
+        "Ms. Lyons is a wonderful human",
+        "Will you buy me some roses?",
+        "Write me a poem",
         "Jim Dandy!",
-        "Joy to the World",
-        "Fa la la la la",
-        "I have a boo boo",
-        "That's it! No more Christmas for you",
         "YES!",
         "Is it 2:40 yet?",
         "I knew it!",
-        "Grandma got run over by a reindeer",
-        "When's the Christmas party?",
-        "I'm telling Santa's mom",
+        "I'm absolutely telling your mom",
         "Mommy",
-        "You'll find coal in your stocking",
-        "Are you standing under the mistletoe?",
-        "Who put the shang in the shang a lang a lang?",
-        "Now, where did I put my sleigh?",
-        "You better not pout, you better not cry",
-        "I love chocolate",
+        "I love chocolate sardines",
         "I'm lonely!",
         "Tim Beebs, tim beebs",
-        "I vote Justin Beeber for Prime Minister",
-        "Candy canes on tuna",
+        "Justin Bieber is a dreamboat",
+        "You're a genius",
       ];
       //pick a random speech tag to accompany the bingo
-      let randomPhrase = speechTags[Math.floor(Math.random() * 40 + 0)];
+      let randomPhrase = speechTags[Math.floor(Math.random() * 25 + 0)];
       textToSpeech(randomPhrase);
       //resets the input window to an empty string
       numberInput.value = "";
@@ -626,15 +696,16 @@ function checkIfCalled() {
       numberInput.placeholder = "Enter a number to check";
       document.getElementById("callBtn").disabled = true;
     }
-  } else if (gameMode == false) {
+  } else if (gameMode === false) {
     console.log("decided the gameMode was false");
+    let numFactors = JSON.parse(window.localStorage.getItem('numFacts'));
     //remove the spaces from the randomFacts array to facilitate the matching of user input
-    let noSpacesRandomFacts = randomFacts.map((c) => c.replace(/\s/g, ""));
-    console.log("noSpaces", noSpacesRandomFacts);
+    let noSpacesRandomNumbers = numFactors.map((c) => c.replace(/\s/g, ""));
+    console.log("noSpaces", noSpacesRandomNumbers);
     const numberInput = document.getElementById("num");
     let factToCheck = numberInput.value;
     console.log("factToCheck", factToCheck);
-    if (noSpacesRandomFacts.includes(factToCheck)) {
+    if (noSpacesRandomNumbers.includes(factToCheck)) {
       console.log("yes", factToCheck);
       document.getElementById("yesOrNo").className = "checkOrXGreen";
       document.getElementById("yesOrNo").innerHTML = "&#10003";
@@ -643,9 +714,12 @@ function checkIfCalled() {
         "Unbelievable",
         "Celebrate good times!",
         "You should buy a lottery ticket!",
-        "Incorrect! Just kidding, it's right!",
+        "That's correct",
         "Yahoo!",
-        "Ding Dang Doo!",
+        "RIght on!",
+        "Now you're cooking with gas",
+        "Yes and yes",
+        "Keep going!"
       ];
       //pick a random speech tag to accompany the bingo
       let randomPhrase = speechTags[Math.floor(Math.random() * 7 + 0)];
